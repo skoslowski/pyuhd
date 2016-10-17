@@ -1,3 +1,5 @@
 _uhd.[co]
 *.so
 __pycache__/
+.eggs/
+build/
