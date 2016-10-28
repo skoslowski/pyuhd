@@ -1,0 +1,3 @@
+_uhd.[co]
+*.so
+__pycache__/
