@@ -4,6 +4,30 @@ from collections import namedtuple
 from .uhd import ffi, lib
 
 
+def cgetter(cfunc, return_type):
+    if return_type == 'string':
+        def getter(instance, *args):
+            strbuffer_len = 400
+            error_out = ffi.new('char[{}]'.format(strbuffer_len))
+            cfunc(instance.handle, *args, error_out, strbuffer_len)
+            return ffi.string(error_out, strbuffer_len).decode()
+
+    elif return_type == 'time_spec':
+        def getter(instance, *args):
+            full_secs_out = ffi.new('time_t *')
+            frac_secs_out = ffi.new('double *')
+            cfunc(instance.handle, *args, full_secs_out, frac_secs_out)
+            result_type = namedtuple('TimeSpec', 'full_secs frac_secs')
+            return result_type(full_secs_out[0], frac_secs_out[0])
+
+    else:
+        def getter(instance, *args):
+            result = ffi.new(return_type + ' *')
+            cfunc(instance.handle, *args, result)
+            return result[0]
+    return getter
+
+
 class cproperty(property):
     """property for simple getter api calls (result as reference of last arg)"""
 
